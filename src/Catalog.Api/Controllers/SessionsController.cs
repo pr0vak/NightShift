@@ -38,7 +38,7 @@ public class SessionsController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Session> Create(CreateSessionRequest request)
+    public ActionResult<Session> Create(CreateOrUpdateSessionRequest request)
     {
         Session session;
         lock (Sync)
@@ -48,5 +48,22 @@ public class SessionsController : ControllerBase
         }
 
         return CreatedAtAction(nameof(GetByid), new { id = session.Id }, session);
+    }
+
+    [HttpPut("{id:int}")]
+    public IActionResult Update(int id, CreateOrUpdateSessionRequest request)
+    {
+        lock (Sync)
+        {
+            var index = Sessions.FindIndex(session => session.Id == id);
+            if (index == -1)
+            {
+                return NotFound();
+            }
+
+            Sessions[index] = Sessions[index] with { Title = request.Title.Trim() };
+        }
+
+        return NoContent();
     }
 }
